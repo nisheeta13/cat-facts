@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🐱 Cat Facts Deluxe</title>
+  <style>
+    :root {
+      --bg-color: #fff0f5;
+      --text-color: #333;
+      --card-color: #ffffff;
+      --button-color: #ff6f61;
+      --button-hover: #e65b50;
+    }
+
+    body.dark {
+      --bg-color: #2c2c2c;
+      --text-color: #f5f5f5;
+      --card-color: #3a3a3a;
+      --button-color: #ff6f61;
+      --button-hover: #e65b50;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    h1 {
+      margin-top: 10px;
+    }
+
+    #cat-image {
+      width: 300px;
+      height: auto;
+      border-radius: 15px;
+      margin: 15px 0;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    #fact {
+      font-size: 1.2rem;
+      background-color: var(--card-color);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin-top: 10px;
+      text-align: center;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .loading {
+      font-style: italic;
+      color: #888;
+    }
+
+    button {
+      margin: 15px 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      color: white;
+      background-color: var(--button-color);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: var(--button-hover);
+      transform: scale(1.05);
+      animation: bounce 0.3s;
+    }
+
+    #history {
+      margin-top: 30px;
+      max-width: 600px;
+      background-color: var(--card-color);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    #history h3 {
+      margin-top: 0;
+    }
+
+    .fact-item {
+      margin: 8px 0;
+      font-size: 0.95rem;
+      color: var(--text-color);
+      animation: slideIn 0.4s ease-in-out;
+    }
+
+    .toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: #ddd;
+      border-radius: 20px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .music-toggle {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-10px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes bounce {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.1); }
+      100% { transform: scale(1.05); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🌗 Theme toggle -->
+  <div class="toggle" onclick="toggleTheme()">🌗 Toggle Mode</div>
+
+  <!-- 🎵 Music toggle -->
+  <div class="music-toggle">
+    <button onclick="toggleMusic()">🎵 Toggle Music</button>
+  </div>
+
+  <!-- 🔊 Background music -->
+  <audio id="bg-music" loop>
+    <source src="https://cdn.pixabay.com/audio/2022/03/30/audio_79b91bfb0a.mp3" type="audio/mpeg" />
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- 🐱 App content -->
+  <h1>🐾 Random Cat Facts</h1>
+  <img id="cat-image" src="" alt="Random Cat Image" />
+  <div id="fact" class="loading">Click the button to get a cat fact!</div>
+
+  <div>
+    <button onclick="getCatFact()">Get Cat Fact</button>
+    <button onclick="clearHistory()">Clear History</button>
+  </div>
+
+  <div id="history">
+    <h3>Last 5 Cat Facts:</h3>
+    <div id="history-list"></div>
+  </div>
+
+  <script>
+    // 🌓 Theme toggle
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    function toggleMusic() {
+        const music = document.getElementById('bg-music');
+
+  // Try to play music only after interaction
+        if (music.paused) {
+            music.volume = 0.3; // optional: lower the volume
+            music.play().catch((err) => {
+            alert("Autoplay is blocked. Please interact with the page first (click anywhere).");
+            console.error("Audio error:", err);
+    });
+  }     else {
+            music.pause();
+  }
+}
+
+
+    // 🐱 Fetch cat fact and image
+    async function getCatFact() {
+      const factElement = document.getElementById('fact');
+      const imageElement = document.getElementById('cat-image');
+      factElement.textContent = "Fetching a purr-fect fact... 🐱";
+      factElement.classList.add("loading");
+
+      try {
+        const factRes = await fetch('https://catfact.ninja/fact');
+        const factData = await factRes.json();
+        factElement.textContent = `"${factData.fact}"`;
+        factElement.classList.remove("loading");
+        factElement.style.animation = "fadeIn 0.5s ease-in-out";
+
+        saveFact(factData.fact);
+        renderHistory();
+
+        const imgRes = await fetch('https://api.thecatapi.com/v1/images/search');
+        const imgData = await imgRes.json();
+        imageElement.src = imgData[0]?.url || "https://placekitten.com/300/200";
+        imageElement.style.animation = "fadeIn 0.5s ease-in-out";
+
+      } catch (error) {
+        factElement.textContent = "Oops! Could not fetch a fact.";
+        imageElement.src = "https://placekitten.com/300/200";
+      }
+    }
+
+    // 💾 Save fact in localStorage
+    function saveFact(fact) {
+      let facts = JSON.parse(localStorage.getItem('catFacts')) || [];
+      facts.unshift(fact);
+      if (facts.length > 5) facts = facts.slice(0, 5);
+      localStorage.setItem('catFacts', JSON.stringify(facts));
+    }
+
+    // 📜 Render fact history
+    function renderHistory() {
+      const container = document.getElementById('history-list');
+      const facts = JSON.parse(localStorage.getItem('catFacts')) || [];
+      container.innerHTML = facts.map(f => `<div class="fact-item">• ${f}</div>`).join('');
+    }
+
+    // 🧹 Clear history
+    function clearHistory() {
+      localStorage.removeItem('catFacts');
+      renderHistory();
+    }
+
+    // ⏯ Load existing history on page load
+    renderHistory();
+
+  window.addEventListener("DOMContentLoaded", () => {
+    document.body.addEventListener("click", () => {
+      const music = document.getElementById("bg-music");
+      music.volume = 0.3;
+      music.play().catch(() => {});
+    }, { once: true });
+  });
+
+  </script>
+</body>
+</html>
